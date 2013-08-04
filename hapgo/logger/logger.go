@@ -19,7 +19,7 @@ const (
 	NOTICE
 	TRACE
 	DEBUG
-	maxBufferLen = 2 << 4
+	maxBufferLen = 2 << 0
 )
 
 var logFlags map[int]string = map[int]string{
@@ -69,24 +69,24 @@ func SetAppId(id uint64) {
 	appId = id
 }
 
-func Debug(msg string) {
-	write(DEBUG, msg)
+func Debug(msg string, params ...interface{}) {
+	write(DEBUG, fmt.Sprintf(msg, params...))
 }
 
-func Trace(msg string) {
-	write(TRACE, msg)
+func Trace(msg string, params ...interface{}) {
+	write(TRACE, fmt.Sprintf(msg, params...))
 }
 
-func Notice(msg string) {
-	write(NOTICE, msg)
+func Notice(msg string, params ...interface{}) {
+	write(NOTICE, fmt.Sprintf(msg, params...))
 }
 
-func Warn(msg string) {
-	write(WARNING, msg)
+func Warn(msg string, params ...interface{}) {
+	write(WARNING, fmt.Sprintf(msg, params...))
 }
 
-func Fatal(msg string) {
-	write(FATAL, msg)
+func Fatal(msg string, params ...interface{}) {
+	write(FATAL, fmt.Sprintf(msg, params...))
 }
 
 func AddBasic(bs map[string]interface{}) {
@@ -104,8 +104,7 @@ func getLogString(level int, msg string) string {
 		panic("logger.levelIllegal")
 	}
 	now := time.Now()
-	nowStr := fmt.Sprintf("%4d-%2d-%2d %2d:%2d:%2d.%3d", now.Year(), now.Month(), now.Day(), now.Hour(), now.Minute(), now.Second(), now.Nanosecond()/1000)
-	return fmt.Sprintf("%s:%s %d %s %s", flag, nowStr, appId, getBaseString(), msg)
+	return fmt.Sprintf("%x:%s %d %s %s", flag, now.Format("2006/01/02 15:04:05.999"), appId, getBaseString(), msg)
 }
 
 func write(level int, msg string) {
@@ -114,7 +113,7 @@ func write(level int, msg string) {
 	}
 	buffers[currentIndex] = getLogString(level, msg)
 	currentIndex++
-	log.Print(currentIndex)
+	log.Print(msg)
 	if currentIndex == maxBufferLen {
 		writer := getWriter()
 
