@@ -9,6 +9,7 @@ import (
 	"math"
 	"math/rand"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -19,10 +20,13 @@ type WebApp struct {
 	Response *core.HttpResponse
 }
 
+var redirectConfs = make(map[string]string)
+
 const (
 	OUTPUT_FORMAT_KEY   = "_of"
 	OUTPUT_ENCODING_KEY = "_oe"
 	DEBUG_KEY           = "_d"
+	redirectConfKey     = "hapgo.redirect"
 )
 
 // type WebFilter interface {
@@ -58,9 +62,46 @@ func (_app *WebApp) Init() {
 
 	// 初始化日志
 	logger.Init(logDir)
+
+	confs, ok := conf.Get(redirectConfKey)
+	for k, v := range confs.(map[string]interface{}) {
+		redirectConfs[k] = v.(string)
+	}
 }
 
 func (_app *WebApp) Execute(w http.ResponseWriter, r *http.Request) {
+	defer func() {
+		if r := recover(); r != nil {
+			logger.Fatal("hapgo.webappFatal:%v", r)
+			if err, ok := r.(string); ok {
+				arr := strings.SplitN(err, " ", 2)
+				if url, ok := redirectConfs[arr[0]]; ok {
+					w.Header().Set("Location", url)
+					switch arr[0] {
+					case "hapgo.u_notfound":
+						w.WriteHeader(http.StatusNotFound)
+					case "hapgo.u_login":
+						w.WriteHeader(http.StatusTemporaryRedirect)
+					case "hapgo.u_error":
+						w.WriteHeader(http.StatusInternalServerError)
+					case "hapgo.u_power":
+						w.WriteHeader(http.StatusForbidden)
+					}
+				} else {
+					w.WriteHeader(http.StatusInternalServerError)
+					if url, ok := redirectConfs["hapgo.u_error"]; ok {
+						w.Header().Set("Location", url)
+					}
+				}
+			} else {
+				w.WriteHeader(http.StatusInternalServerError)
+				if url, ok := redirectConfs["hapgo.u_error"]; ok {
+					w.Header().Set("Location", url)
+				}
+			}
+		}
+	}()
+
 	appId := createAppId()
 	logger.SetAppId(appId)
 

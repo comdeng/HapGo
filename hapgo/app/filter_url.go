@@ -5,6 +5,7 @@ import (
 	"github.com/comdeng/HapGo/hapgo/logger"
 	"github.com/comdeng/HapGo/lib/cache"
 	"github.com/comdeng/HapGo/lib/util"
+	"strings"
 	"sync"
 	"time"
 )
@@ -20,14 +21,19 @@ const csrfConfKey = "hapgo.csrf"
 
 var _csrfInfo csrfInfo
 
+const (
+	pathSplitter = '/'
+	postFlag     = '_'
+)
+
 func AppUrlFilter(_app *WebApp) error {
 	start := time.Now()
 
 	var once sync.Once
 	once.Do(initUrlConf)
 
-	if initCsrf(_app) {
-
+	if !initCsrf(_app) {
+		initUrl(_app)
 	}
 
 	end := time.Now()
@@ -45,6 +51,24 @@ func initUrlConf() {
 	conf.Decode(csrfConfKey, &_csrfInfo)
 }
 
+func initUrl(_app *WebApp) {
+	req := _app.Request.Req
+	url := strings.ToLower(req.URL.Path)
+	url = url[1:]
+	urlLen := len(url)
+	if url[urlLen-1] == pathSplitter {
+		url = url[0 : urlLen-2]
+	}
+	arr := strings.Split(url, string(pathSplitter))
+	// 限制POST请求必须以_开头
+	if arr[len(arr)-1][0] == postFlag {
+		if req.Method != "POST" {
+			panic("hapgo.u_notfound")
+		}
+	}
+}
+
+// csrf 校验
 func initCsrf(_app *WebApp) (isOver bool) {
 	req := _app.Request.Req
 	if req.Method == "POST" {

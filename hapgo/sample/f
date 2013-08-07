@@ -1,7 +1,0 @@
-HTTP/1.1 200 OK
-Content-Type: application/json; charset=UTF-8
-Set-Cookie: tid=f9875289dc215d01aeee389f0464a26a; Path=/; Domain=localhost; Expires=Wed, 30 Jul 2014 04:04:35 UTC
-Content-Length: 75
-Date: Sun, 04 Aug 2013 04:04:35 GMT
-
-{"Err":"hapgo.ok","Data":{"_posttoken":"397de6b1d04cc9b61a27c0acb7f18c5e"}}
