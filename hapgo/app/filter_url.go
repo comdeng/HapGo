@@ -2,6 +2,7 @@ package app
 
 import (
 	"github.com/comdeng/HapGo/hapgo/conf"
+	"github.com/comdeng/HapGo/hapgo/core"
 	"github.com/comdeng/HapGo/hapgo/logger"
 	"github.com/comdeng/HapGo/lib/cache"
 	"github.com/comdeng/HapGo/lib/util"
@@ -65,6 +66,12 @@ func initUrl(_app *WebApp) {
 		if req.Method != "POST" {
 			panic("hapgo.u_notfound")
 		}
+	}
+
+	if len(arr) == 2 {
+		ctrl := core.NewController(arr[0], arr[1], _app.Request, _app.Response)
+
+		core.CallMethod(ctrl, arr[1])
 	}
 }
 

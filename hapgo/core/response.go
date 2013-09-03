@@ -22,7 +22,7 @@ type responseData struct {
 }
 
 type HttpResponse struct {
-	Res         http.ResponseWriter
+	Writer      http.ResponseWriter
 	outFormat   string
 	outEncoding string
 	data        responseData
@@ -35,8 +35,8 @@ const (
 	contentTypeKey = "Content-Type"
 )
 
-func (response *HttpResponse) Init(res http.ResponseWriter) {
-	response.Res = res
+func (response *HttpResponse) Init(w http.ResponseWriter) {
+	response.Writer = w
 	response.outEncoding = "UTF-8"
 	response.data.Data = make(map[string]interface{})
 	response.data.Err = STATUS_OK
@@ -91,7 +91,7 @@ func (res *HttpResponse) SetEncoding(encoding string) {
 }
 
 func (res *HttpResponse) getContent() string {
-	BuildContentType(res.Res, res.outFormat, res.outEncoding)
+	BuildContentType(res.Writer, res.outFormat, res.outEncoding)
 
 	if res.rawData != "" {
 		return res.rawData
@@ -123,6 +123,6 @@ func (res *HttpResponse) getContent() string {
 func (res *HttpResponse) Send() {
 	data := res.getContent()
 	if len(data) > 0 {
-		res.Res.Write([]byte(data))
+		res.Writer.Write([]byte(data))
 	}
 }

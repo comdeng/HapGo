@@ -3,7 +3,9 @@ package main
 import (
 	"github.com/comdeng/HapGo/hapgo/app"
 	"github.com/comdeng/HapGo/hapgo/conf"
+	"github.com/comdeng/HapGo/hapgo/core"
 	"github.com/comdeng/HapGo/hapgo/logger"
+	"github.com/comdeng/HapGo/hapgo/sample/controller"
 	//"log"
 	// "fmt"
 	"net/http"
@@ -36,12 +38,12 @@ func main() {
 	_app = app.NewWebApp()
 	_app.Init()
 
-	basic := map[string]interface{}{
-		"gid": "sdfsdf",
-	}
-	logger.AddBasic(basic)
+	// 注册控制器
+	core.RegisterController("default", &controller.DefaultController{nil})
+
 	http.HandleFunc("/", handle)
 	http.ListenAndServe("127.0.0.1:11000", nil)
+
 }
 
 func handle(rw http.ResponseWriter, req *http.Request) {

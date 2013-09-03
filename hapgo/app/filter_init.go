@@ -42,10 +42,14 @@ func generateTrackId(_app *WebApp) {
 		cookie.Domain = trackId.Domain
 		cookie.Expires = time.Now().Add(time.Hour * time.Duration(24*trackId.Expire))
 		cookie.Value = util.UniqId()
-		http.SetCookie(_app.Response.Res, cookie)
+		http.SetCookie(_app.Response.Writer, cookie)
 		value = cookie.Value
 	} else {
 		value = cookie.Value
 	}
 	_app.Request.UserData["tid"] = value
+
+	logger.AddBasic(map[string]interface{}{
+		"tid": value,
+	})
 }
